@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 
@@ -23,6 +24,12 @@ public class Robot extends TimedRobot {
   private final XboxController m_controller = new XboxController(0);
   private final Drivetrain m_swerve = new Drivetrain();
 
+  private boolean m_LimelightHasValidTarget = false;
+  private double m_LimelightDriveCommand = 0.0;
+  private double m_LimelightSteerCommand = 0.0;
+
+  XboxController m_Controller = new XboxController(0);
+
   // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
   private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
   private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
@@ -37,6 +44,25 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     driveWithJoystick(true);
+
+    Update_Limelight_Tracking();
+
+    double steer = m_Controller.getRightX();
+    double drive = -m_Controller.getLeftY();
+    boolean auto = m_Controller.getAButton();
+    
+    steer *= 0.70;
+    drive *= 0.70;
+    
+    if (auto) {
+      if (m_LimelightHasValidTarget) {
+        m_Drive.arcadeDrive(m_LimelightDriveCommand,m_LimelightSteerCommand);
+      } else {
+        m_Drive.arcadeDrive(0.0,0.0);
+      }
+    } else {
+      m_Drive.arcadeDrive(drive,steer);
+    }
   }
 
   private void driveWithJoystick(boolean fieldRelative) {
@@ -62,5 +88,40 @@ public class Robot extends TimedRobot {
             * Drivetrain.kMaxAngularSpeed;
 
     m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative);
+  }
+
+  public void Update_Limelight_Tracking(){
+    // These numbers must be tuned for your Robot!  Be careful!
+    final double STEER_K = 0.03;                    // how hard to turn toward the target
+    final double DRIVE_K = 0.26;                    // how hard to drive fwd toward the target
+    final double DESIRED_TARGET_AREA = 13.0;        // Area of the target when the robot reaches the wall
+    final double MAX_DRIVE = 0.7;                   // Simple speed limit so we don't drive too fast
+    
+    double tv = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tv").getDouble(0);
+    double tx = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
+    double ty = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
+    double ta = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ta").getDouble(0);
+    
+    if (tv < 1.0) {
+      m_LimelightHasValidTarget = false;
+      m_LimelightDriveCommand = 0.0;
+      m_LimelightSteerCommand = 0.0;
+      return;
+    }
+    
+    m_LimelightHasValidTarget = true;
+    
+    // Start with proportional steering
+    double steer_cmd = tx * STEER_K;
+    m_LimelightSteerCommand = steer_cmd;
+    
+    // try to drive forward until the target area reaches our desired area
+    double drive_cmd = (DESIRED_TARGET_AREA - ta) * DRIVE_K;
+    
+    // don't let the robot drive too fast into the goal
+    if (drive_cmd > MAX_DRIVE) {
+      drive_cmd = MAX_DRIVE;
+    }
+    m_LimelightDriveCommand = drive_cmd; 
   }
 }

@@ -3,15 +3,16 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.VictorSP;
 import edu.wpi.first.networktables.*;
 
 
-public class Camera {
+public class Camera extends SubsystemBase {
   
     /**
      * The VM is configured to automatically run this class, and to call the
@@ -28,8 +29,8 @@ public class Camera {
       private VictorSP m_Left1 = new VictorSP(1);
       private VictorSP m_Right0 = new VictorSP(2);
       private VictorSP m_Right1 = new VictorSP(3);
-      private MotorController m_LeftMotors = new MotorController(m_Left0,m_Left1) {
-      private MotorController m_RightMotors = new MotorController(m_Right0,m_Right1);
+      private MotorControllerGroup m_LeftMotors = new MotorControllerGroup(m_Left0, m_Left1);
+      private MotorControllerGroup m_RightMotors = new MotorControllerGroup(m_Right0,m_Right1);
       private DifferentialDrive m_Drive = new DifferentialDrive(m_LeftMotors,m_RightMotors);
     
       private XboxController m_Controller = new XboxController(0);
@@ -160,8 +161,7 @@ public class Camera {
               drive_cmd = MAX_DRIVE;
             }
             m_LimelightDriveCommand = drive_cmd; 
-        }
-    }
+      }
 }
       
     
