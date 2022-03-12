@@ -56,12 +56,13 @@ public class Robot extends TimedRobot {
     
     if (auto) {
       if (m_LimelightHasValidTarget) {
-        m_Drive.arcadeDrive(m_LimelightDriveCommand,m_LimelightSteerCommand);
+        //if there is an error change back to m_Drive
+        m_swerve.arcadeDrive(m_LimelightDriveCommand,m_LimelightSteerCommand);
       } else {
-        m_Drive.arcadeDrive(0.0,0.0);
+        m_swerve.arcadeDrive(0.0,0.0);
       }
     } else {
-      m_Drive.arcadeDrive(drive,steer);
+      m_swerve.arcadeDrive(drive,steer);
     }
   }
 
@@ -99,7 +100,7 @@ public class Robot extends TimedRobot {
     
     double tv = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tv").getDouble(0);
     double tx = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
-    double ty = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
+   // double ty = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
     double ta = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ta").getDouble(0);
     
     if (tv < 1.0) {

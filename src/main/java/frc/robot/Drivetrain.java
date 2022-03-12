@@ -71,4 +71,7 @@ public class Drivetrain {
         m_backLeft.getState(),
         m_backRight.getState());
   }
+
+public void arcadeDrive(double m_LimelightDriveCommand, double m_LimelightSteerCommand) {
+}
 }
